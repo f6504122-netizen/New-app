@@ -377,54 +377,47 @@ fun ProfileScreen(viewModel: DeeporamViewModel) {
                 }
             }
 
-            // Quick Role Switcher for Evaluation
+            // Secure Admin Portal Entry
             item {
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = Navy900,
-                    border = BorderStroke(1.dp, Gold500.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.5.dp, Gold500.copy(alpha = 0.5f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "પોર્ટલ મોડ સ્વિચર (Role-Based Access)",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Gold400
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = Gold400, modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "એડમિનિસ્ટ્રેટર કન્સોલ (Admin & Trustee Access)",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Gold400
+                                )
                             )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "ઇવેન્ટ્સ/ડ્રો કસ્ટમાઇઝેશન, દાન ખાતાઓનું સંચાલન અને કમ્પ્લાયન્સ માટે સ્પેશિયલ ID અને પાસવર્ડ દ્વારા અધિકૃત લૉગિન કરો.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Slate300, lineHeight = 18.sp)
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.switchUserRole(UserRole.ADMIN)
-                                    viewModel.navigateTo(Screen.ADMIN_PORTAL)
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold300),
-                                border = BorderStroke(1.dp, Gold400)
-                            ) {
-                                Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("એડમિન")
-                            }
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.switchUserRole(UserRole.COMPLIANCE_OFFICER)
-                                    viewModel.navigateTo(Screen.ADMIN_PORTAL)
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = PureWhite),
-                                border = BorderStroke(1.dp, Navy700)
-                            ) {
-                                Icon(Icons.Default.Gavel, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("કમ્પ્લાયન્સ")
-                            }
+                        Button(
+                            onClick = {
+                                viewModel.navigateTo(Screen.ADMIN_LOGIN)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Navy800, contentColor = Gold400),
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, Gold400),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("open_admin_login_btn")
+                        ) {
+                            Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("સ્પેશિયલ ID દ્વારા એડમિન લૉગિન", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

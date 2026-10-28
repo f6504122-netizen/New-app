@@ -18,7 +18,12 @@ data class AppUser(
     val role: UserRole = UserRole.CUSTOMER,
     val preferredLanguage: AppLanguage = AppLanguage.GUJARATI,
     val isKycVerified: Boolean = true,
-    val consentAuditLogs: Boolean = true
+    val consentAuditLogs: Boolean = true,
+    val isSuspended: Boolean = false,
+    val maxTicketLimit: Int = 10,
+    val registeredAt: Long = System.currentTimeMillis(),
+    val totalDonationInr: Long = 0,
+    val bookedTicketsCount: Int = 0
 )
 
 enum class CampaignStatus {

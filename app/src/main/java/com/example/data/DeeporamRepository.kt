@@ -46,6 +46,9 @@ class DeeporamRepository private constructor() {
     private val _complianceGates = MutableStateFlow<Map<String, ComplianceGate>>(emptyMap())
     val complianceGates: StateFlow<Map<String, ComplianceGate>> = _complianceGates.asStateFlow()
 
+    private val _allAccounts = MutableStateFlow<List<AppUser>>(emptyList())
+    val allAccounts: StateFlow<List<AppUser>> = _allAccounts.asStateFlow()
+
     init {
         seedInitialData()
     }
@@ -244,6 +247,81 @@ class DeeporamRepository private constructor() {
             entityId = "DRW-PAST-2026-01",
             details = "Certified CSPRNG random selection, zero collision, sealed video replay archived."
         )
+
+        _allAccounts.value = listOf(
+            AppUser(
+                id = "usr_demo_01",
+                name = "Ramesh Patel (રમેશભાઈ પટેલ)",
+                phone = "+91 98765 43210",
+                email = "ramesh.patel@example.com",
+                state = "Ahmedabad, Gujarat",
+                role = UserRole.CUSTOMER,
+                preferredLanguage = AppLanguage.GUJARATI,
+                isKycVerified = true,
+                totalDonationInr = 500,
+                bookedTicketsCount = 2
+            ),
+            AppUser(
+                id = "usr_donor_02",
+                name = "Gitaben Shah (ગીતાબેન શાહ)",
+                phone = "+91 98251 77889",
+                email = "gita.shah@example.com",
+                state = "Surat, Gujarat",
+                role = UserRole.CUSTOMER,
+                preferredLanguage = AppLanguage.GUJARATI,
+                isKycVerified = true,
+                totalDonationInr = 250,
+                bookedTicketsCount = 1
+            ),
+            AppUser(
+                id = "usr_donor_03",
+                name = "Jayeshbhai Prajapati (જયેશભાઈ)",
+                phone = "+91 97123 44556",
+                email = "jayesh.p@example.com",
+                state = "Rajkot, Gujarat",
+                role = UserRole.CUSTOMER,
+                preferredLanguage = AppLanguage.GUJARATI,
+                isKycVerified = true,
+                totalDonationInr = 350,
+                bookedTicketsCount = 3
+            ),
+            AppUser(
+                id = "admin_01",
+                name = "Trustee Devendra Shah (Super Admin)",
+                phone = "+91 94260 00111",
+                email = "admin@deeporam.org",
+                state = "Ahmedabad, Gujarat",
+                role = UserRole.ADMIN,
+                preferredLanguage = AppLanguage.GUJARATI,
+                isKycVerified = true,
+                totalDonationInr = 50000,
+                bookedTicketsCount = 0
+            ),
+            AppUser(
+                id = "comp_01",
+                name = "Advocate Hasmukh Dave (Trustee)",
+                phone = "+91 98240 55667",
+                email = "legal@deeporam.org",
+                state = "Gandhinagar, Gujarat",
+                role = UserRole.COMPLIANCE_OFFICER,
+                preferredLanguage = AppLanguage.GUJARATI,
+                isKycVerified = true,
+                totalDonationInr = 25000,
+                bookedTicketsCount = 0
+            ),
+            AppUser(
+                id = "audit_01",
+                name = "CA Nilesh Sanghavi (External Auditor)",
+                phone = "+91 99090 12345",
+                email = "auditor@sanghavica.com",
+                state = "Vadodara, Gujarat",
+                role = UserRole.AUDITOR,
+                preferredLanguage = AppLanguage.ENGLISH,
+                isKycVerified = true,
+                totalDonationInr = 0,
+                bookedTicketsCount = 0
+            )
+        )
     }
 
     fun setLanguage(language: AppLanguage) {
@@ -289,6 +367,7 @@ class DeeporamRepository private constructor() {
             isKycVerified = true
         )
         _currentUser.value = newUser
+        _allAccounts.value = listOf(newUser) + _allAccounts.value
 
         // Award 1 Welcome Charity Ticket for new users
         val c1 = _campaigns.value.firstOrNull()
@@ -309,6 +388,170 @@ class DeeporamRepository private constructor() {
             details = "Registered verified donor $cleanName with phone $phone in $city, Gujarat. Welcome charity pass issued."
         )
         return newUser
+    }
+
+    fun loginAdminWithSpecialCredentials(specialId: String, password: String): Boolean {
+        val cleanId = specialId.trim().uppercase(Locale.US)
+        val cleanPass = password.trim()
+        val isValidId = cleanId in setOf("DEEPORAM_ADMIN", "ADMIN786", "TRUSTEE01", "SUPERADMIN", "ADMIN", "DF_ADMIN_2026")
+        val isValidPass = cleanPass in setOf("Deeporam@2026", "Admin@123", "Admin@786", "Deeporam@786", "Admin2026")
+
+        if (isValidId && isValidPass) {
+            val adminRole = if (cleanId == "TRUSTEE01") UserRole.COMPLIANCE_OFFICER else UserRole.ADMIN
+            val adminUser = AppUser(
+                id = "admin_special_${cleanId.lowercase(Locale.US)}",
+                name = if (adminRole == UserRole.COMPLIANCE_OFFICER) "Advocate Hasmukh Dave (Trustee)" else "Trustee Devendra Shah (Super Admin)",
+                phone = "+91 94260 00111",
+                email = "admin@deeporam.org",
+                state = "Ahmedabad, Gujarat",
+                role = adminRole,
+                preferredLanguage = _currentLanguage.value,
+                isKycVerified = true
+            )
+            _currentUser.value = adminUser
+            if (_allAccounts.value.none { it.id == adminUser.id }) {
+                _allAccounts.value = listOf(adminUser) + _allAccounts.value
+            }
+            addAuditLog(
+                actorEmail = "admin@deeporam.org",
+                actorRole = adminRole.name,
+                action = "ADMIN_SPECIAL_AUTH_SUCCESS",
+                entityType = "Session",
+                entityId = "sess_" + System.currentTimeMillis(),
+                details = "Special ID '$cleanId' successfully authenticated. Administrative session active."
+            )
+            return true
+        } else {
+            addAuditLog(
+                actorEmail = "anonymous@deeporam.org",
+                actorRole = "UNAUTHORIZED",
+                action = "ADMIN_SPECIAL_AUTH_FAILED",
+                entityType = "SecurityIncident",
+                entityId = "fail_" + System.currentTimeMillis(),
+                details = "Failed authentication attempt for Special ID: '$cleanId'."
+            )
+            return false
+        }
+    }
+
+    // Account Customization
+    fun addAccount(account: AppUser) {
+        _allAccounts.value = listOf(account) + _allAccounts.value
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "ADD_USER_ACCOUNT",
+            entityType = "Account",
+            entityId = account.id,
+            details = "Created account: ${account.name} (${account.role.name}, ${account.phone})"
+        )
+    }
+
+    fun updateAccount(account: AppUser) {
+        _allAccounts.value = _allAccounts.value.map {
+            if (it.id == account.id) account else it
+        }
+        if (_currentUser.value?.id == account.id) {
+            _currentUser.value = account
+        }
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "UPDATE_USER_ACCOUNT",
+            entityType = "Account",
+            entityId = account.id,
+            details = "Updated account ${account.name}: Role=${account.role.name}, Suspended=${account.isSuspended}, MaxTickets=${account.maxTicketLimit}"
+        )
+    }
+
+    fun deleteAccount(accountId: String) {
+        val account = _allAccounts.value.find { it.id == accountId }
+        _allAccounts.value = _allAccounts.value.filterNot { it.id == accountId }
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "DELETE_USER_ACCOUNT",
+            entityType = "Account",
+            entityId = accountId,
+            details = "Deleted account ${account?.name ?: accountId} (${account?.email ?: ""})"
+        )
+    }
+
+    fun toggleAccountSuspension(accountId: String) {
+        _allAccounts.value = _allAccounts.value.map {
+            if (it.id == accountId) {
+                val updated = it.copy(isSuspended = !it.isSuspended)
+                addAuditLog(
+                    actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+                    actorRole = "ADMIN",
+                    action = if (updated.isSuspended) "SUSPEND_ACCOUNT" else "ACTIVATE_ACCOUNT",
+                    entityType = "Account",
+                    entityId = accountId,
+                    details = "Account ${it.name} suspension status set to: ${updated.isSuspended}"
+                )
+                updated
+            } else it
+        }
+    }
+
+    // Event & Campaign Customization
+    fun addCampaign(campaign: Campaign) {
+        val list = mutableListOf<DrawTicket>()
+        for (i in 1..campaign.totalTickets) {
+            val ticketNum = 1000 + i
+            list.add(
+                DrawTicket(
+                    ticketNumber = ticketNum,
+                    formattedNumber = String.format(Locale.US, "#%04d", ticketNum),
+                    campaignId = campaign.id,
+                    status = TicketStatus.AVAILABLE
+                )
+            )
+        }
+        val map = _ticketsByCampaign.value.toMutableMap()
+        map[campaign.id] = list
+        _ticketsByCampaign.value = map
+        _campaigns.value = listOf(campaign) + _campaigns.value
+
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "CREATE_CAMPAIGN_EVENT",
+            entityType = "Campaign",
+            entityId = campaign.id,
+            details = "Added event ${campaign.code}: ${campaign.titleGu} with ${campaign.totalTickets} tickets at ₹${campaign.ticketPriceInr}."
+        )
+    }
+
+    fun updateCampaign(campaign: Campaign) {
+        _campaigns.value = _campaigns.value.map {
+            if (it.id == campaign.id) campaign else it
+        }
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "CUSTOMIZE_CAMPAIGN_EVENT",
+            entityType = "Campaign",
+            entityId = campaign.id,
+            details = "Customized event ${campaign.code}: Title=${campaign.titleGu}, Price=₹${campaign.ticketPriceInr}, Status=${campaign.status.name}, DrawDate=${campaign.drawDate}"
+        )
+    }
+
+    fun deleteCampaign(campaignId: String) {
+        val camp = _campaigns.value.find { it.id == campaignId }
+        _campaigns.value = _campaigns.value.filterNot { it.id == campaignId }
+        val map = _ticketsByCampaign.value.toMutableMap()
+        map.remove(campaignId)
+        _ticketsByCampaign.value = map
+
+        addAuditLog(
+            actorEmail = _currentUser.value?.email ?: "admin@deeporam.org",
+            actorRole = "ADMIN",
+            action = "DELETE_CAMPAIGN_EVENT",
+            entityType = "Campaign",
+            entityId = campaignId,
+            details = "Deleted/Archived campaign ${camp?.code ?: campaignId} (${camp?.titleGu ?: ""})"
+        )
     }
 
     fun loginAdmin(role: UserRole = UserRole.ADMIN) {

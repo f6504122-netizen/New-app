@@ -30,6 +30,7 @@ enum class Screen {
     DRAW_RESULTS,
     SUPPORT,
     PROFILE,
+    ADMIN_LOGIN,
     ADMIN_PORTAL
 }
 
@@ -70,6 +71,7 @@ class DeeporamViewModel(
     val drawResults: StateFlow<List<DrawResult>> = repository.drawResults
     val auditLogs: StateFlow<List<AuditLog>> = repository.auditLogs
     val complianceGates: StateFlow<Map<String, ComplianceGate>> = repository.complianceGates
+    val allAccounts: StateFlow<List<AppUser>> = repository.allAccounts
 
     private val _selectedCampaignId = MutableStateFlow<String?>("camp_deepotsav_2026")
     val selectedCampaignId: StateFlow<String?> = _selectedCampaignId.asStateFlow()
@@ -299,6 +301,54 @@ class DeeporamViewModel(
     fun loginAdmin(role: UserRole) {
         repository.loginAdmin(role)
         navigateTo(Screen.ADMIN_PORTAL)
+    }
+
+    fun loginAdminWithSpecialCredentials(specialId: String, password: String): Boolean {
+        val success = repository.loginAdminWithSpecialCredentials(specialId, password)
+        if (success) {
+            showToast("એડમિન અધિકૃતતા સફળ! / Admin Verified Successfully!")
+            navigateTo(Screen.ADMIN_PORTAL)
+        } else {
+            showToast("અમાન્ય એડમિન સ્પેશિયલ આઈડી અથવા પાસવર્ડ! / Invalid Admin Special ID or Password!")
+        }
+        return success
+    }
+
+    // Accounts Customization
+    fun addAccount(account: AppUser) {
+        repository.addAccount(account)
+        showToast("નવું એકાઉન્ટ સફળતાપૂર્વક ઉમેરાયું / Account Added")
+    }
+
+    fun updateAccount(account: AppUser) {
+        repository.updateAccount(account)
+        showToast("એકાઉન્ટ વિગતો અપડેટ થઈ / Account Details Updated")
+    }
+
+    fun deleteAccount(accountId: String) {
+        repository.deleteAccount(accountId)
+        showToast("એકાઉન્ટ ડિલીટ થયું / Account Removed")
+    }
+
+    fun toggleAccountSuspension(accountId: String) {
+        repository.toggleAccountSuspension(accountId)
+        showToast("એકાઉન્ટ સ્ટેટ્સ બદલાયું / Account Status Updated")
+    }
+
+    // Event & Campaign Customization
+    fun addCampaign(campaign: Campaign) {
+        repository.addCampaign(campaign)
+        showToast("નવી ઇવેન્ટ / ડ્રો સફળતાપૂર્વક ઉમેરાઈ / New Event Created")
+    }
+
+    fun updateCampaign(campaign: Campaign) {
+        repository.updateCampaign(campaign)
+        showToast("ઇવેન્ટ સફળતાપૂર્વક અપડેટ થઈ / Event Customized")
+    }
+
+    fun deleteCampaign(campaignId: String) {
+        repository.deleteCampaign(campaignId)
+        showToast("ઇવેન્ટ ડિલીટ થઈ / Event Removed")
     }
 
     fun logout() {

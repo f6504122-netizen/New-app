@@ -22,6 +22,8 @@ val OffWhite = Color(0xFFF8FAFC)
 val Slate300 = Color(0xFFCBD5E1)
 val Slate400 = Color(0xFF94A3B8)
 val Slate500 = Color(0xFF64748B)
+val Slate600 = Color(0xFF475569)
+val Slate700 = Color(0xFF334155)
 
 val StatusSuccess = Color(0xFF10B981)
 val StatusWarning = Color(0xFFF59E0B)

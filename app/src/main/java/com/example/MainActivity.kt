@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
                             Screen.DRAW_RESULTS -> DrawResultsScreen(viewModel = viewModel)
                             Screen.SUPPORT -> CustomerSupportScreen(viewModel = viewModel)
                             Screen.PROFILE -> ProfileScreen(viewModel = viewModel)
+                            Screen.ADMIN_LOGIN -> AdminLoginScreen(viewModel = viewModel)
                             Screen.ADMIN_PORTAL -> AdminPortalScreen(viewModel = viewModel)
                         }
                     }
