@@ -1,0 +1,6 @@
+{
+  "name": "Deeporam Foundation",
+  "description": "Deeporam Foundation Draw Ticket Booking (દીપોરામ ફાઉન્ડેશન) - Charitable draw ticketing, prize transparency, live winner audits, and administrative compliance portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "Registered donors, customers, and administrative personnel.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "state": { "type": "string" },
+        "role": { "type": "string", "enum": ["CUSTOMER", "ADMIN", "COMPLIANCE_OFFICER", "AUDITOR"] },
+        "preferredLanguage": { "type": "string", "enum": ["gu", "hi", "en"] },
+        "isKycVerified": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "phone", "role"]
+    },
+    "campaigns": {
+      "title": "Campaign",
+      "description": "Charitable draw campaigns organized under trust statutory approvals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "title": { "type": "string" },
+        "causeDescription": { "type": "string" },
+        "ticketPriceInr": { "type": "number" },
+        "totalTickets": { "type": "number" },
+        "soldTickets": { "type": "number" },
+        "drawDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["DRAFT", "REVIEW", "APPROVED", "ACTIVE", "PAUSED", "CLOSED"] },
+        "statutoryTrustRegNo": { "type": "string" },
+        "complianceApprovalNumber": { "type": "string" }
+      },
+      "required": ["id", "code", "title", "ticketPriceInr", "totalTickets", "status"]
+    },
+    "bookings": {
+      "title": "Booking",
+      "description": "Atomically allocated ticket bookings and contribution receipts.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "campaignId": { "type": "string" },
+        "userId": { "type": "string" },
+        "ticketNumbers": { "type": "array", "items": { "type": "number" } },
+        "totalAmountInr": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["PENDING", "VERIFIED_DEMO", "COMPLETED", "FAILED", "REFUNDED"] },
+        "transactionRef": { "type": "string" },
+        "qrToken": { "type": "string" },
+        "tax80GCertificateNumber": { "type": "string" }
+      },
+      "required": ["id", "campaignId", "userId", "ticketNumbers", "paymentStatus"]
+    },
+    "draws": {
+      "title": "Draw",
+      "description": "Official campaign lucky draw executions certified by auditors.",
+      "type": "object",
+      "properties": {
+        "drawId": { "type": "string" },
+        "campaignId": { "type": "string" },
+        "drawDate": { "type": "string" },
+        "executedAt": { "type": "number" },
+        "independentAuditorName": { "type": "string" },
+        "entropyProofSha256": { "type": "string" },
+        "isPubliclyPublished": { "type": "boolean" }
+      },
+      "required": ["drawId", "campaignId", "entropyProofSha256"]
+    },
+    "auditLogs": {
+      "title": "AuditLog",
+      "description": "Immutable audit events logging every state transition, booking, and draw action.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "actorEmail": { "type": "string" },
+        "actorRole": { "type": "string" },
+        "action": { "type": "string" },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "sha256Checksum": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "actorEmail", "action", "sha256Checksum"]
+    }
+  }
+}
